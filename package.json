@@ -1,0 +1,14 @@
+{
+  "name": "congest",
+  "description": "Promise-wise await event handler before emitting next event",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "test": "node_modules/.bin/mocha"
+  },
+  "devDependencies": {
+    "bluebird": "^3.0",
+    "chai": "^3.4",
+    "mocha": "~2.3"
+  }
+}
