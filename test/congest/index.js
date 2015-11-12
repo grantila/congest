@@ -71,14 +71,60 @@ describe( 'general', ( ) => {
 
 		var result = [ ];
 
-		congest.push( 'a' );
-		congest.push( 'b' );
+		function expectCalled( val )
+		{
+			return _ => {
+				expect( val ).to.equal( true );
+			}
+		}
+
+		congest.push( 'a' )
+		.then( expectCalled( false ), expectCalled( true ) );
+
+		congest.push( 'b' )
+		.then( expectCalled( false ), expectCalled( true ) );
+
 		congest.cancel( true );
 
 		return congest.consume( data => result.push( data ) )
 		.then( _ => {
 			expect( result ).to.deep.equal( [ ] );
 		} );
+	} );
+
+	it( 'should forward promise result from handler to emitted', ( ) => {
+		var congest = new Congest( );
+
+		var result = [ ];
+		var awaits = [ ];
+
+		awaits.push(
+			congest.push( 'a' )
+			.then( _ => {
+				expect( result ).to.contain( 'a' );
+			} )
+		);
+
+		awaits.push(
+			congest.push( 'b' )
+			.then( _ => {
+				expect( result ).to.deep.equal( [ ...'ab' ] );
+			} )
+		);
+
+		congest.cancel( );
+
+		awaits.push(
+			congest.consume( data => {
+				result.push( data );
+				return result;
+			} )
+			.then( _ => {
+				expect( result ).to.deep.equal( [ ...'ab' ] );
+			} )
+		);
+
+		return Promise.all( awaits );
 	} );
 
 } );
