@@ -5,7 +5,7 @@ Pipelining of events to an event handler by respecting the handlers promise resu
 A lot of event-based code looks like this:
 
 ```js
-displatcher.on( 'my-event', ( data ) => {
+dispatcher.on( 'my-event', ( data ) => {
 	doStuff( )
 	.then( doMore )
 	.then( doLastThing );
@@ -34,7 +34,7 @@ var Congest = require( 'congest' ).using( require( 'bluebird' ) );
 
 ### The Congest class
 
-The returned value from `require( 'congest' )` or `require( 'congest' ).using( Promise )` is a class called Congest. It is constructed with an optional canceler callback which will be invoked when.
+The returned value from `require( 'congest' )` or `require( 'congest' ).using( Promise )` is a class called Congest. It is constructed with an optional canceler callback which will be invoked when the congest instance is canceled (described below).
 
 Example:
 ```js
@@ -51,11 +51,11 @@ Boolean congest.hasCanceled( ); // Boolean
 
 #### Push
 
-The `P{void} push( value )` function is used to add values to the congest instance. The consume function will be invoked sequencially with these values. The returned promise can be used to await when the consume function has completed this particular value, although this is rarely important to know.
+The `P{void} push( value )` function is used to add values to the congest instance. The consume function will be invoked sequencially with these values. The returned promise can be used to await when the consume function has completed this particular value. This is useful e.g. when using `congest` to handle incoming AMQP messages that are supposed to be ack'd or nack'd (e.g. depending on the promise result).
 
 #### Cancel
 
-To cancel the congest instance, so no more pushes are allowed, the `P{void} cancel( Boolean immediate = false )` function should be called. By default the optional `immediate` argument is false, which means we will gracefully cancel, await the custom canceler to complete, and then consume the backlog of values until we are done. If `immediate` is truthy, the congest instance will guarantee that the consume function will not be called again. The backlog of values will be ignored and deleted, i.e. data will be lost.
+To cancel the congest instance, so no more pushes are allowed, the `P{void} cancel( Boolean immediate = false )` function should be called. By default the optional `immediate` argument is false, which means `congest` will gracefully cancel, await the custom canceler to complete, and then consume the backlog of values until we are done. If `immediate` is truthy, the congest instance will guarantee that the consume function will not be called again. The backlog of values will be ignored and deleted, i.e. data will be lost.
 
 The returned promise will be completed when the last consume function has finished and completed (hence only really useful when `immediate` is false).
 
